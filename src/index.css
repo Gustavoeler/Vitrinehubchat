@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  --font-sans: "DM Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+@layer base {
+  html,
+  body {
+    font-family: var(--font-sans);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  .font-display {
+    font-family: var(--font-display);
+  }
+
+  .tabular-nums {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+/* Authentic WhatsApp-style warm beige canvas with delicate outline doodles */
+.chat-canvas-bg {
+  background-color: #EFEAE2;
+  background-image: url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' stroke='%236B5E4C' stroke-width='1.1' stroke-opacity='0.055' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M18 22h14a3 3 0 0 1 3 3v8a3 3 0 0 1-3 3H23l-5 4v-4a3 3 0 0 1-3-3v-8a3 3 0 0 1 3-3z'/%3E%3Ccircle cx='86' cy='24' r='7'/%3E%3Cpath d='M83 24h6M86 21v6'/%3E%3Cpath d='M52 54c0-4 3-7 7-7s7 3 7 7c0 3-2 5-4 6v4h-6v-4c-2-1-4-3-4-6z'/%3E%3Cpath d='M22 86l4-10 4 10m-7-3h6'/%3E%3Crect x='78' y='74' width='16' height='12' rx='3'/%3E%3Cpath d='M82 74v-2a4 4 0 0 1 8 0v2'/%3E%3Cpath d='M52 16l3 2 4-4'/%3E%3Ccircle cx='106' cy='54' r='4'/%3E%3Ccircle cx='14' cy='58' r='3'/%3E%3Cpath d='M54 96h12m-6-6v12'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+.chat-scroll::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb {
+  background: rgba(11, 20, 26, 0.16);
+  border-radius: 9999px;
+}
+
+.chat-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(11, 20, 26, 0.28);
+}
+
+@keyframes msgPopIn {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.msg-enter {
+  animation: msgPopIn 150ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes typingBounce {
+  0%, 80%, 100% {
+    transform: translateY(0);
+    opacity: 0.45;
+  }
+  40% {
+    transform: translateY(-3px);
+    opacity: 1;
+  }
+}
+
+.typing-dot {
+  animation: typingBounce 1.15s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .msg-enter {
+    animation: none;
+  }
+  .typing-dot {
+    animation: none;
+    opacity: 0.7;
+  }
+}

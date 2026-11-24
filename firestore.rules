@@ -1,0 +1,215 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global default-deny safety net
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Core helper primitives
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && (
+          request.auth.token.email == 'vitrinehub2@gmail.com'
+          || exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        );
+    }
+
+    function isValidAppSettings(data) {
+      return data.keys().hasAll([
+          'brandName', 'statusLabel', 'whatsappNumber', 'whatsappPrefillMessage',
+          'proCheckoutUrl', 'proPlanName', 'proPlanPrice', 'proPlanDescription',
+          'proPlanBenefits', 'proPlanButtonText', 'setupPlanName', 'setupPlanPrice',
+          'setupPlanDescription', 'setupPlanBenefits', 'setupPlanNfcNote',
+          'setupPlanButtonText', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'brandName', 'statusLabel', 'whatsappNumber', 'whatsappPrefillMessage',
+          'proCheckoutUrl', 'proPlanName', 'proPlanPrice', 'proPlanDescription',
+          'proPlanBenefits', 'proPlanButtonText', 'setupPlanName', 'setupPlanPrice',
+          'setupPlanDescription', 'setupPlanBenefits', 'setupPlanNfcNote',
+          'setupPlanButtonText', 'updatedAt'
+        ])
+        && data.brandName is string && data.brandName.size() >= 1 && data.brandName.size() <= 100
+        && data.statusLabel is string && data.statusLabel.size() >= 1 && data.statusLabel.size() <= 40
+        && data.whatsappNumber is string && data.whatsappNumber.size() >= 8 && data.whatsappNumber.size() <= 24 && data.whatsappNumber.matches('^[0-9]{8,20}$')
+        && data.whatsappPrefillMessage is string && data.whatsappPrefillMessage.size() >= 1 && data.whatsappPrefillMessage.size() <= 600
+        && data.proCheckoutUrl is string && data.proCheckoutUrl.size() >= 1 && data.proCheckoutUrl.size() <= 600
+        && data.proPlanName is string && data.proPlanName.size() >= 1 && data.proPlanName.size() <= 120
+        && data.proPlanPrice is string && data.proPlanPrice.size() >= 1 && data.proPlanPrice.size() <= 40
+        && data.proPlanDescription is string && data.proPlanDescription.size() >= 1 && data.proPlanDescription.size() <= 500
+        && data.proPlanBenefits is list && data.proPlanBenefits.size() >= 1 && data.proPlanBenefits.size() <= 20 && data.proPlanBenefits[0] is string
+        && data.proPlanButtonText is string && data.proPlanButtonText.size() >= 1 && data.proPlanButtonText.size() <= 100
+        && data.setupPlanName is string && data.setupPlanName.size() >= 1 && data.setupPlanName.size() <= 120
+        && data.setupPlanPrice is string && data.setupPlanPrice.size() >= 1 && data.setupPlanPrice.size() <= 40
+        && data.setupPlanDescription is string && data.setupPlanDescription.size() >= 1 && data.setupPlanDescription.size() <= 500
+        && data.setupPlanBenefits is list && data.setupPlanBenefits.size() >= 1 && data.setupPlanBenefits.size() <= 20 && data.setupPlanBenefits[0] is string
+        && data.setupPlanNfcNote is string && data.setupPlanNfcNote.size() >= 1 && data.setupPlanNfcNote.size() <= 600
+        && data.setupPlanButtonText is string && data.setupPlanButtonText.size() >= 1 && data.setupPlanButtonText.size() <= 100
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidFlowStep(data) {
+      return data.keys().hasAll(['stepKey', 'order', 'title', 'messages', 'buttonText', 'widgetType', 'isActive', 'updatedAt'])
+        && data.keys().hasOnly(['stepKey', 'order', 'title', 'messages', 'buttonText', 'widgetType', 'isActive', 'updatedAt'])
+        && data.stepKey is string && data.stepKey.size() >= 1 && data.stepKey.size() <= 64 && data.stepKey.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.order is number && data.order >= 0 && data.order <= 1000
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 120
+        && data.messages is list && data.messages.size() >= 1 && data.messages.size() <= 15 && data.messages[0] is string
+        && data.buttonText is string && data.buttonText.size() <= 120
+        && data.widgetType in ['none', 'benefits_list', 'menu_examples', 'comparison', 'plans']
+        && data.isActive is bool
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidMenuExample(data) {
+      return data.keys().hasAll(['businessName', 'category', 'imageUrl', 'demoUrl', 'description', 'order', 'isActive', 'updatedAt'])
+        && data.keys().hasOnly(['businessName', 'category', 'imageUrl', 'demoUrl', 'description', 'order', 'isActive', 'updatedAt'])
+        && data.businessName is string && data.businessName.size() >= 1 && data.businessName.size() <= 120
+        && data.category is string && data.category.size() >= 1 && data.category.size() <= 80
+        && data.imageUrl is string && data.imageUrl.size() <= 600
+        && data.demoUrl is string && data.demoUrl.size() >= 1 && data.demoUrl.size() <= 600
+        && data.description is string && data.description.size() <= 350
+        && data.order is number && data.order >= 0 && data.order <= 1000
+        && data.isActive is bool
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidLead(data) {
+      return data.keys().hasAll(['businessName', 'responsibleName', 'businessType', 'city', 'contactPhone', 'selectedPlan', 'selectedPlanLabel', 'visitorSessionId', 'createdAt'])
+        && data.keys().hasOnly(['businessName', 'responsibleName', 'businessType', 'city', 'contactPhone', 'selectedPlan', 'selectedPlanLabel', 'visitorSessionId', 'createdAt'])
+        && data.businessName is string && data.businessName.size() <= 140
+        && data.responsibleName is string && data.responsibleName.size() <= 140
+        && data.businessType is string && data.businessType.size() <= 100
+        && data.city is string && data.city.size() <= 100
+        && data.contactPhone is string && data.contactPhone.size() <= 40
+        && data.selectedPlan in ['pro', 'setup', 'interest']
+        && data.selectedPlanLabel is string && data.selectedPlanLabel.size() >= 1 && data.selectedPlanLabel.size() <= 140
+        && data.visitorSessionId is string && data.visitorSessionId.size() >= 1 && data.visitorSessionId.size() <= 128 && data.visitorSessionId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.createdAt is timestamp;
+    }
+
+    function isValidVisitorSession(data) {
+      return data.keys().hasAll([
+          'sessionId', 'currentStepId', 'currentStepTitle', 'startedChat',
+          'reachedPlans', 'clickedProPlan', 'clickedSetupPlan', 'stepsVisited',
+          'deviceType', 'trafficSource', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'sessionId', 'currentStepId', 'currentStepTitle', 'startedChat',
+          'reachedPlans', 'clickedProPlan', 'clickedSetupPlan', 'stepsVisited',
+          'deviceType', 'trafficSource', 'createdAt', 'updatedAt'
+        ])
+        && data.sessionId is string && data.sessionId.size() >= 8 && data.sessionId.size() <= 128 && data.sessionId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.currentStepId is string && data.currentStepId.size() >= 1 && data.currentStepId.size() <= 64 && data.currentStepId.matches('^[a-zA-Z0-9_\\-]+$')
+        && data.currentStepTitle is string && data.currentStepTitle.size() >= 1 && data.currentStepTitle.size() <= 120
+        && data.startedChat is bool
+        && data.reachedPlans is bool
+        && data.clickedProPlan is bool
+        && data.clickedSetupPlan is bool
+        && data.stepsVisited is list && data.stepsVisited.size() >= 1 && data.stepsVisited.size() <= 50 && data.stepsVisited[0] is string
+        && data.deviceType in ['mobile', 'desktop']
+        && data.trafficSource is string && data.trafficSource.size() >= 1 && data.trafficSource.size() <= 80
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidAdminUser(data) {
+      return data.keys().hasAll(['email', 'role', 'createdAt'])
+        && data.keys().hasOnly(['email', 'role', 'createdAt'])
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 200
+        && data.role == 'admin'
+        && data.createdAt is timestamp;
+    }
+
+    // Connection validation probe
+    match /test/{docId} {
+      allow get: if docId == 'connection';
+    }
+
+    // Public commercial configuration
+    match /app_config/{configId} {
+      allow get: if isValidId(configId);
+      allow list: if false;
+      allow create, update: if isAdmin() && configId == 'settings' && isValidAppSettings(incoming()) && incoming().updatedAt == request.time;
+      allow delete: if false;
+    }
+
+    // Configurable chat flow steps
+    match /flow_steps/{stepId} {
+      allow get: if isValidId(stepId);
+      allow list: if true;
+      allow create, update: if isAdmin() && isValidId(stepId) && isValidFlowStep(incoming()) && incoming().updatedAt == request.time;
+      allow delete: if isAdmin() && isValidId(stepId);
+    }
+
+    // Digital menu showcase examples
+    match /menu_examples/{exampleId} {
+      allow get: if isValidId(exampleId);
+      allow list: if true;
+      allow create, update: if isAdmin() && isValidId(exampleId) && isValidMenuExample(incoming()) && incoming().updatedAt == request.time;
+      allow delete: if isAdmin() && isValidId(exampleId);
+    }
+
+    // Lead capture (write-once for public ad visitors, read/delete strictly admin-only)
+    match /leads/{leadId} {
+      allow get: if isAdmin() && isValidId(leadId);
+      allow list: if isAdmin();
+      allow create: if isValidId(leadId) && isValidLead(incoming()) && incoming().createdAt == request.time;
+      allow update: if false;
+      allow delete: if isAdmin() && isValidId(leadId);
+    }
+
+    // Visitor analytics & funnel drop-off tracking
+    match /visitor_sessions/{sessionId} {
+      allow get: if isAdmin() && isValidId(sessionId);
+      allow list: if isAdmin();
+      allow create: if isValidId(sessionId)
+        && isValidVisitorSession(incoming())
+        && incoming().sessionId == sessionId
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+      allow update: if isValidId(sessionId)
+        && isValidVisitorSession(incoming())
+        && incoming().sessionId == existing().sessionId
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          isAdmin()
+          || incoming().diff(existing()).affectedKeys().hasOnly([
+            'currentStepId', 'currentStepTitle', 'startedChat', 'reachedPlans',
+            'clickedProPlan', 'clickedSetupPlan', 'stepsVisited', 'deviceType',
+            'trafficSource', 'updatedAt'
+          ])
+        );
+      allow delete: if isAdmin() && isValidId(sessionId);
+    }
+
+    // Admin directory
+    match /admins/{adminId} {
+      allow get: if isSignedIn() && request.auth.token.email_verified == true && isValidId(adminId) && (request.auth.uid == adminId || isAdmin());
+      allow list: if isAdmin();
+      allow create: if isAdmin() && isValidId(adminId) && isValidAdminUser(incoming()) && incoming().createdAt == request.time;
+      allow update: if isAdmin() && isValidId(adminId) && isValidAdminUser(incoming()) && incoming().createdAt == existing().createdAt;
+      allow delete: if isAdmin() && isValidId(adminId);
+    }
+  }
+}

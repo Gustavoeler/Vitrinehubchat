@@ -1,0 +1,197 @@
+{
+  "entities": {
+    "AppSettings": {
+      "title": "AppSettings",
+      "description": "Global commercial chat settings, plan pricing, and external redirect links configured by admin.",
+      "type": "object",
+      "properties": {
+        "brandName": { "type": "string", "maxLength": 100 },
+        "statusLabel": { "type": "string", "maxLength": 40 },
+        "whatsappNumber": { "type": "string", "maxLength": 24, "pattern": "^[0-9]{8,20}$" },
+        "whatsappPrefillMessage": { "type": "string", "maxLength": 600 },
+        "proCheckoutUrl": { "type": "string", "maxLength": 600 },
+        "proPlanName": { "type": "string", "maxLength": 120 },
+        "proPlanPrice": { "type": "string", "maxLength": 40 },
+        "proPlanDescription": { "type": "string", "maxLength": 500 },
+        "proPlanBenefits": { "type": "array", "description": "List of Pro plan bullet items" },
+        "proPlanButtonText": { "type": "string", "maxLength": 100 },
+        "setupPlanName": { "type": "string", "maxLength": 120 },
+        "setupPlanPrice": { "type": "string", "maxLength": 40 },
+        "setupPlanDescription": { "type": "string", "maxLength": 500 },
+        "setupPlanBenefits": { "type": "array", "description": "List of Setup package included items" },
+        "setupPlanNfcNote": { "type": "string", "maxLength": 600 },
+        "setupPlanButtonText": { "type": "string", "maxLength": 100 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "brandName",
+        "statusLabel",
+        "whatsappNumber",
+        "whatsappPrefillMessage",
+        "proCheckoutUrl",
+        "proPlanName",
+        "proPlanPrice",
+        "proPlanDescription",
+        "proPlanBenefits",
+        "proPlanButtonText",
+        "setupPlanName",
+        "setupPlanPrice",
+        "setupPlanDescription",
+        "setupPlanBenefits",
+        "setupPlanNfcNote",
+        "setupPlanButtonText",
+        "updatedAt"
+      ]
+    },
+    "FlowStep": {
+      "title": "FlowStep",
+      "description": "Configurable step in the commercial sales chat flow.",
+      "type": "object",
+      "properties": {
+        "stepKey": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "order": { "type": "number" },
+        "title": { "type": "string", "maxLength": 120 },
+        "messages": { "type": "array", "description": "Ordered chat messages shown in this step" },
+        "buttonText": { "type": "string", "maxLength": 120 },
+        "widgetType": {
+          "type": "string",
+          "enum": ["none", "benefits_list", "menu_examples", "comparison", "plans"]
+        },
+        "isActive": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "stepKey",
+        "order",
+        "title",
+        "messages",
+        "buttonText",
+        "widgetType",
+        "isActive",
+        "updatedAt"
+      ]
+    },
+    "MenuExample": {
+      "title": "MenuExample",
+      "description": "Digital menu showcase example managed by admin.",
+      "type": "object",
+      "properties": {
+        "businessName": { "type": "string", "maxLength": 120 },
+        "category": { "type": "string", "maxLength": 80 },
+        "imageUrl": { "type": "string", "maxLength": 600 },
+        "demoUrl": { "type": "string", "maxLength": 600 },
+        "description": { "type": "string", "maxLength": 350 },
+        "order": { "type": "number" },
+        "isActive": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "businessName",
+        "category",
+        "imageUrl",
+        "demoUrl",
+        "description",
+        "order",
+        "isActive",
+        "updatedAt"
+      ]
+    },
+    "Lead": {
+      "title": "Lead",
+      "description": "Optional prospective customer contact details captured before plan redirect or at the end of chat.",
+      "type": "object",
+      "properties": {
+        "businessName": { "type": "string", "maxLength": 140 },
+        "responsibleName": { "type": "string", "maxLength": 140 },
+        "businessType": { "type": "string", "maxLength": 100 },
+        "city": { "type": "string", "maxLength": 100 },
+        "contactPhone": { "type": "string", "maxLength": 40 },
+        "selectedPlan": { "type": "string", "enum": ["pro", "setup", "interest"] },
+        "selectedPlanLabel": { "type": "string", "maxLength": 140 },
+        "visitorSessionId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "businessName",
+        "responsibleName",
+        "businessType",
+        "city",
+        "contactPhone",
+        "selectedPlan",
+        "selectedPlanLabel",
+        "visitorSessionId",
+        "createdAt"
+      ]
+    },
+    "VisitorSession": {
+      "title": "VisitorSession",
+      "description": "Anonymous visitor funnel progress and plan click telemetry.",
+      "type": "object",
+      "properties": {
+        "sessionId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "currentStepId": { "type": "string", "maxLength": 64, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "currentStepTitle": { "type": "string", "maxLength": 120 },
+        "startedChat": { "type": "boolean" },
+        "reachedPlans": { "type": "boolean" },
+        "clickedProPlan": { "type": "boolean" },
+        "clickedSetupPlan": { "type": "boolean" },
+        "stepsVisited": { "type": "array", "description": "Array of visited step IDs" },
+        "deviceType": { "type": "string", "enum": ["mobile", "desktop"] },
+        "trafficSource": { "type": "string", "maxLength": 80 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "sessionId",
+        "currentStepId",
+        "currentStepTitle",
+        "startedChat",
+        "reachedPlans",
+        "clickedProPlan",
+        "clickedSetupPlan",
+        "stepsVisited",
+        "deviceType",
+        "trafficSource",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AdminUser": {
+      "title": "AdminUser",
+      "description": "Authorized admin record keyed by Firebase Auth UID.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "maxLength": 200 },
+        "role": { "type": "string", "enum": ["admin"] },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["email", "role", "createdAt"]
+    }
+  },
+  "firestore": {
+    "/app_config/{configId}": {
+      "schema": { "$ref": "#/entities/AppSettings" },
+      "description": "Publicly readable commercial settings, editable only by verified admins."
+    },
+    "/flow_steps/{stepId}": {
+      "schema": { "$ref": "#/entities/FlowStep" },
+      "description": "Publicly readable chat flow steps, editable only by verified admins."
+    },
+    "/menu_examples/{exampleId}": {
+      "schema": { "$ref": "#/entities/MenuExample" },
+      "description": "Publicly readable menu examples, editable only by verified admins."
+    },
+    "/leads/{leadId}": {
+      "schema": { "$ref": "#/entities/Lead" },
+      "description": "Write-once lead capture from visitors; strictly admin-only read/update/delete."
+    },
+    "/visitor_sessions/{sessionId}": {
+      "schema": { "$ref": "#/entities/VisitorSession" },
+      "description": "Visitor progress tracking; visitors can create/update their own session, only admins can read/list/delete."
+    },
+    "/admins/{adminId}": {
+      "schema": { "$ref": "#/entities/AdminUser" },
+      "description": "Admin role registry."
+    }
+  }
+}

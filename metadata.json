@@ -1,0 +1,8 @@
+{
+  "name": "VitrineHub | Atendimento Comercial",
+  "description": "Sistema interativo de atendimento comercial e conversão da VitrineHub com fluxo conversacional estilo WhatsApp e painel administrativo completo.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
